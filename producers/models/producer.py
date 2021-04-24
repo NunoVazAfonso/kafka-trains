@@ -4,7 +4,7 @@ import time
 
 from confluent_kafka import avro
 from confluent_kafka.admin import AdminClient, NewTopic
-from confluent_kafka.avro import AvroProducer
+from confluent_kafka.avro import AvroProducer, CachedSchemaRegistryClient
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,6 @@ class Producer:
             "client.id" : "trains-arrival-producer",
             "linger.ms" : 1000,
             "schema.registry.url": SCHEMA_REGISTRY_URL
-
         }
 
         # If the topic does not already exist, try to create it
@@ -50,8 +49,11 @@ class Producer:
             Producer.existing_topics.add(self.topic_name)
 
         # Configure the AvroProducer 
+        schema_registry = CachedSchemaRegistryClient( SCHEMA_REGISTRY_URL )
+
         self.producer = AvroProducer(
-            self.broker_properties 
+            {"bootstrap.servers": BROKER_URL},
+            schema_registry= SCHEMA_REGISTRY_URL 
         )
 
     def create_topic(self):
@@ -68,7 +70,7 @@ class Producer:
         if self.topic_name not in set(t.topic for t in iter(topic_metadata.topics.values())):
             topics_created = client.create_topics([
                 NewTopic(
-                    topic=SELF.topic_name,
+                    topic=self.topic_name,
                     num_partitions=10,
                     replication_factor=1,
                     config={
@@ -95,7 +97,7 @@ class Producer:
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
-        self.flush()
+        self.producer.flush()
         logger.info("producer close incomplete - skipping")
 
     def time_millis(self):

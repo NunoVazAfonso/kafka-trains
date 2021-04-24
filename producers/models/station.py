@@ -37,13 +37,14 @@ class Station(Producer):
         # replicas
         #
         #
+
         topic_name = f"com.nunovazafonso.kafka_trains.station.{station_name}" # DONE: Come up with a better topic name
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
             value_schema=Station.value_schema, # DONE: Uncomment once schema is defined
-            num_partitions= 5, # DONE
-            num_replicas= 1, # DONE
+            num_partitions= 1, # DONE
+            num_replicas= 1 # DONE
         )
 
         self.station_id = int(station_id)
@@ -64,12 +65,8 @@ class Station(Producer):
         #
         logger.info("arrival kafka integration incomplete - skipping")
 
-        print( self  )
-        print( "\n" )
-        print( self.color.name )
-        print( prev_station_id )        
-        print( prev_direction )
-
+        print(self) # DEBUG
+        
         self.producer.produce(
            topic=self.topic_name,
            key_schema={"timestamp": self.time_millis()},
@@ -81,7 +78,7 @@ class Station(Producer):
                 "train_status":  str(train.status.name),
                 "prev_station_id": prev_station_id,
                 "prev_direction":  prev_direction,
-           },
+           }
         )
 
     def __str__(self):

@@ -41,7 +41,7 @@ class Turnstile(Producer):
             f"com.nunovazafonso.kafka_trains.turnstile.{station_name}", # DONE: Come up with a better topic name
             key_schema=Turnstile.key_schema,
             value_schema=Turnstile.value_schema, #DONE: Uncomment once schema is defined
-            num_partitions=5, #DONE
+            num_partitions=1, #DONE
             num_replicas=1, #DONE
         )
         self.station = station
@@ -59,10 +59,10 @@ class Turnstile(Producer):
         #
         self.producer.produce(
            topic=self.topic_name,
-           key={"timestamp": self.time_millis()},
-           value={
+           key_schema={"timestamp": self.time_millis()},
+           value_schema={
                 "station_id": self.station.station_id ,
-                "station_name": self.station_name,
-                "line": self.color.name # this is an enum
+                "station_name": self.station.name,
+                "line": self.station.color.name # this is an enum
            },
         )

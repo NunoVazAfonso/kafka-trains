@@ -38,7 +38,7 @@ class Line:
                 station_data["station_id"].unique()[0],
                 station,
                 self.color,
-                prev_station,
+                prev_station
             )
             prev_station.dir_b = new_station
             prev_station = new_station

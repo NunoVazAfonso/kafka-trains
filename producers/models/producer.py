@@ -64,23 +64,30 @@ class Producer:
         #
         client = AdminClient({"bootstrap.servers": BROKER_URL})
 
-        """Checks if the given topic exists"""
-        topic_metadata = client.list_topics(timeout=5)
+        print(f"assessing if topic created: {self.topic_name}")
         
-        if self.topic_name not in set(t.topic for t in iter(topic_metadata.topics.values())):
+        """Checks if the given topic exists"""
+        topic_metadata = client.list_topics(topic=self.topic_name, timeout=10)
+        
+        topic_exists = self.topic_name in set(t.topic for t in iter(topic_metadata.topics.values()))
+
+        if not topic_exists:
             topics_created = client.create_topics([
                 NewTopic(
                     topic=self.topic_name,
-                    num_partitions=10,
-                    replication_factor=1,
+                    num_partitions= self.num_partitions,
+                    replication_factor= self.num_replicas,
                     config={
                         "cleanup.policy": "delete",
                         "compression.type": "lz4",
-                        "delete.retention.ms": "2000",
-                        "file.delete.delay.ms": "2000",
+                        "delete.retention.ms": "1000",
+                        "file.delete.delay.ms": "1000",
                     }
                 )
             ])
+
+
+            print("creating topic")
 
             for topic, future in topics_created.items():
                 try:

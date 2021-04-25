@@ -38,7 +38,8 @@ class Station(Producer):
         #
         #
 
-        topic_name = f"com.nunovazafonso.kafka_trains.station.{station_name}" # DONE: Come up with a better topic name
+        topic_name = f"com.nunovazafonso.kafka_trains.station.{station_name}" #one topic per station # DONE: Come up with a better topic name
+        #topic_name = f"com.nunovazafonso.kafka_trains.stations" #one topic for ALL STATIONS. this is not clear on directions
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,

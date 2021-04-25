@@ -38,7 +38,8 @@ class Turnstile(Producer):
         #
         #
         super().__init__(
-            f"com.nunovazafonso.kafka_trains.turnstile.{station_name}", # DONE: Come up with a better topic name
+            #f"com.nunovazafonso.kafka_trains.turnstile.{station_name}", # DONE: Come up with a better topic name
+            "com.nunovazafonso.kafka_trains.turnstiles",
             key_schema=Turnstile.key_schema,
             value_schema=Turnstile.value_schema, #DONE: Uncomment once schema is defined
             num_partitions=1, #DONE

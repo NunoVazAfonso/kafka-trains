@@ -29,30 +29,32 @@ class TransformedStation(faust.Record):
     line: str
 
 
-# TODO: Define a Faust Stream that ingests data from the Kafka Connect stations topic and
+# DONE: Define a Faust Stream that ingests data from the Kafka Connect stations topic and
 #   places it into a new topic with only the necessary information.
 app = faust.App("stations-stream", broker="kafka://localhost:9092", store="memory://")
-# TODO: Define the input Kafka Topic. Hint: What topic did Kafka Connect output to?
-# topic = app.topic("TODO", value_type=Station)
-# TODO: Define the output Kafka Topic
-# out_topic = app.topic("TODO", partitions=1)
-# TODO: Define a Faust Table
-#table = app.Table(
-#    # "TODO",
-#    # default=TODO,
-#    partitions=1,
-#    changelog_topic=out_topic,
-#)
+# DONE: Define the input Kafka Topic. Hint: What topic did Kafka Connect output to?
+topic = app.topic("com.nunovazafonso.kafka_trainsstations", value_type=Station)
+# DONE: Define the output Kafka Topic
+out_topic = app.topic("com.nunovazafonso.kafka_trains.stations_processed", partitions=1, value_type=TransformedStation)
+# DONE: Define a Faust Table
+table = app.Table(
+    "stations_clean",
+    default=int,
+    partitions=1,
+    changelog_topic=out_topic,
+)
 
-
-#
-#
-# TODO: Using Faust, transform input `Station` records into `TransformedStation` records. Note that
-# "line" is the color of the station. So if the `Station` record has the field `red` set to true,
-# then you would set the `line` of the `TransformedStation` record to the string `"red"`
-#
-#
-
+@app.agent(topic)
+async def station(stations):
+    async for s in stations: 
+        out_s = TransformedStation(
+            station_id = s.stop_id,
+            station_name = s.stop_name,
+            order = s.order,
+            line = "red" if s.red else "blue" if s.blue else "green"
+        )
+        
+        await out_topic.send(key=out_s.station_name, value=out_s) 
 
 if __name__ == "__main__":
     app.main()

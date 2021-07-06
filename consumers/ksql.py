@@ -36,7 +36,7 @@ CREATE TABLE turnstile_summary
 WITH (
     VALUE_FORMAT='JSON'
 ) AS
-    SELECT station_id , station_name, COUNT(1) AS count FROM turnstile GROUP BY station_id , station_name;
+    SELECT station_id , station_name, COUNT(1) AS count FROM turnstile GROUP BY station_id, station_name;
 """
 
 

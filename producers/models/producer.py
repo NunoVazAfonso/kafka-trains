@@ -52,8 +52,12 @@ class Producer:
         schema_registry = CachedSchemaRegistryClient( SCHEMA_REGISTRY_URL )
 
         self.producer = AvroProducer(
-            {"bootstrap.servers": BROKER_URL},
-            schema_registry= SCHEMA_REGISTRY_URL 
+            {
+                "bootstrap.servers": BROKER_URL,
+                "schema.registry.url": SCHEMA_REGISTRY_URL
+            }, 
+            default_key_schema=self.key_schema,
+            default_value_schema=self.value_schema
         )
 
     def create_topic(self):
@@ -96,8 +100,7 @@ class Producer:
                 except Exception as e:
                     print(f"failed to create topic {self.topic_name}: {e}")
 
-
-        logger.info("topic creation kafka integration incomplete - skipping")
+        #logger.info("topic creation kafka integration incomplete - skipping")
 
     def time_millis(self):
         return int(round(time.time() * 1000))
@@ -105,7 +108,7 @@ class Producer:
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
         self.producer.flush()
-        logger.info("producer close incomplete - skipping")
+        logger.info("producer closing")
 
     def time_millis(self):
         """Use this function to get the key for Kafka Events"""

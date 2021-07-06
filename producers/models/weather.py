@@ -78,15 +78,15 @@ class Weather(Producer):
 
         # DONE: Complete the function by posting a weather event to REST Proxy. Make sure to
         # specify the Avro schemas and verify that you are using the correct Content-Type header.
-        logger.info("weather kafka proxy integration incomplete - skipping")
-
+        #logger.info("weather kafka - creating")
+        
         # DONE
         data = {
-            "key_schema": json.dumps(Weather.key_schema), 
+            "key_schema": json.dumps(Weather.key_schema),
             "value_schema": json.dumps(Weather.value_schema),
             "records": [
                 {
-                    "key": {"timestamp": self.time_millis()}, # this is needed because of key schema
+                    "key": {"timestamp": self.time_millis()},
                     "value": 
                         {
                             "temperature": self.temp ,
@@ -95,19 +95,6 @@ class Weather(Producer):
                 }
             ]
         }
-
-        # data = {
-        #     "value_schema": json.dumps(Weather.value_schema),
-        #     "records": [
-        #         {
-        #             "value": 
-        #                 {
-        #                     "temperature": self.temp ,
-        #                     "status": self.status.name
-        #                 }
-        #         }
-        #     ]
-        # }
         
         resp = requests.post(
             # DONE: What URL should be POSTed to?

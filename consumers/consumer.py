@@ -10,13 +10,12 @@ from tornado import gen
 
 logger = logging.getLogger(__name__)
 
+BROKER_URL = 'PLAINTEXT://localhost:9092'
+SCHEMA_REGISTRY_URL = 'http://localhost:8081'
 
 class KafkaConsumer:
     """Defines the base kafka consumer class"""
 
-    BROKER_URL = 'PLAINTEXT://localhost:9092'
-    SCHEMA_REGISTRY_URL = 'http://localhost:8081'
-    
     def __init__(
         self,
         topic_name_pattern,
@@ -34,15 +33,13 @@ class KafkaConsumer:
         self.offset_earliest = offset_earliest
 
         #
-        #
         # DONE: Configure the broker properties below. Make sure to reference the project README
         # and use the Host URL for Kafka and Schema Registry!
-        #
         #
         self.broker_properties = {
             'bootstrap.servers': BROKER_URL,
             'session.timeout.ms': 6000,
-            'auto.offset.reset': 'earliest',
+            'auto.offset.reset': 'earliest' if offset_earliest else 'latest',
             'group.id': "0"
         }
 
@@ -50,8 +47,8 @@ class KafkaConsumer:
         if is_avro is True:
             self.broker_properties["schema.registry.url"] = "http://localhost:8081"
             self.consumer = AvroConsumer(
-                config=self.broker_properties,
-                schema_registry=SCHEMA_REGISTRY_URL
+                config=self.broker_properties
+                #,schema_registry=SCHEMA_REGISTRY_URL
             )
         else:
             self.consumer = Consumer(self.broker_properties)
@@ -65,7 +62,7 @@ class KafkaConsumer:
         self.consumer.subscribe( 
             # https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html#confluent_kafka.Consumer.subscribe
             [self.topic_name_pattern], 
-            on_assign=on_assign 
+            on_assign=self.on_assign 
         )
 
     def on_assign(self, consumer, partitions):
@@ -105,9 +102,9 @@ class KafkaConsumer:
             logger.info(f"consumer ERROR: {message.error()}")
             return 0
         else:
+            self.message_handler( message ) # DONE: send message to corresponding model message processor
             logger.info(f"Consumer message: {message.key()}: {message.value()}")
             return 1
-        await asyncio.sleep(0.1)
         
 
     def close(self):
